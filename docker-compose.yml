@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+
+  blue:
+    build:
+      context: ./blue
+      dockerfile: Dockerfile
+    container_name: kaijudo_blue
+    expose:
+      - "8000"
+      - "3000"
+    ports:
+      - "8001:3000"
+    networks:
+      - kaijudo_net
+    restart: unless-stopped
+
+  green:
+    build:
+      context: ./green
+      dockerfile: Dockerfile
+    container_name: kaijudo_green
+    expose:
+      - "8000"
+      - "3000"
+    ports:
+      - "8002:3000"
+    networks:
+      - kaijudo_net
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: kaijudo_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - blue
+      - green
+    networks:
+      - kaijudo_net
+    restart: unless-stopped
+
+networks:
+  kaijudo_net:
+    driver: bridge
