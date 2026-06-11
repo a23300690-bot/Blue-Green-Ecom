@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaijudo — Mis órdenes</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-brand">
+    <span class="nav-brand-dot"></span>
+    Kaijudo
+  </a>
+  <div class="nav-links">
+    <a href="../index.html" class="flex align-center gap-1" style="color:var(--text-2)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Catálogo
+    </a>
+    <button class="btn btn-ghost btn-sm flex align-center gap-1" onclick="logout()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Salir
+    </button>
+  </div>
+</nav>
+
+<div class="container" style="max-width:780px;">
+  <p class="section-label mb-1">Cuenta</p>
+  <h2 class="page-title mb-3">Mis <span>órdenes</span></h2>
+  <div id="alert-area"></div>
+  <div id="ordenes-container">
+    <div class="card" style="height:100px"><div class="skeleton" style="height:100%"></div></div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-box" id="chat-box">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <span class="chat-status-dot"></span>
+        <span>Soporte</span>
+      </div>
+      <button id="chat-close" style="background:none;border:none;color:var(--text-2);cursor:pointer;display:flex">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Escribe un mensaje...">
+      <button id="chat-send" class="btn btn-primary btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+  <button class="chat-toggle" id="chat-toggle">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </button>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/chat.js"></script>
+<script>
+if (!isLoggedIn()) window.location.href = 'login.html';
+
+function calcTotal(o) {
+  if (o.total != null && o.total !== 0) return Number(o.total);
+  return (o.items || []).reduce((s, i) => {
+    const sub = i.subtotal ?? (i.precio_unitario * i.cantidad) ?? 0;
+    return s + Number(sub);
+  }, 0);
+}
+
+function calcSubtotal(i) {
+  const sub = i.subtotal ?? (i.precio_unitario * i.cantidad) ?? 0;
+  return Number(sub);
+}
+
+function formatFecha(o) {
+  const raw = o.fecha || o.fecha_creacion || o.created_at || null;
+  if (!raw) return '—';
+  const d = new Date(raw);
+  return isNaN(d) ? raw : d.toLocaleDateString('es-MX', {year:'numeric', month:'short', day:'numeric'});
+}
+
+async function loadOrdenes() {
+  const container = document.getElementById('ordenes-container');
+  try {
+    const ordenes = await Ordenes.list();
+    if (!ordenes.length) {
+      container.innerHTML = `
+        <div class="card card-p">
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <h3>Sin órdenes</h3>
+            <p>Todavía no has realizado compras.</p>
+            <a href="../index.html" class="btn btn-primary" style="margin-top:1rem;display:inline-flex">Ver catálogo</a>
+          </div>
+        </div>`;
+      return;
+    }
+    container.innerHTML = ordenes.map(o => {
+      const total  = calcTotal(o);
+      const metodo = (o.metodo_pago || '—').replace(/_/g, ' ');
+      const fecha  = formatFecha(o);
+      return `
+        <div class="order-card">
+          <div class="order-card-head">
+            <div class="flex align-center gap-2">
+              <span style="font-family:var(--font-mono);font-size:.8rem;color:var(--text-2)">#${o.id}</span>
+              <span class="badge badge-${o.estado}">${o.estado}</span>
+            </div>
+            <div class="flex align-center gap-2">
+              <span class="text-muted" style="font-size:.78rem;">${fecha}</span>
+              <span style="font-family:var(--font-mono);font-size:.85rem;color:var(--accent-2)">$${total.toFixed(2)}</span>
+            </div>
+          </div>
+          <div class="order-card-body">
+            ${(o.items || []).map(i => `
+              <div class="order-item-row">
+                <span>${i.nombre_producto} <span class="text-muted" style="font-size:.78rem;font-family:var(--font-mono)">x${i.cantidad}</span></span>
+                <span style="font-family:var(--font-mono);font-size:.85rem">$${calcSubtotal(i).toFixed(2)}</span>
+              </div>`).join('')}
+            <hr class="divider">
+            <div class="flex-between" style="font-size:.8rem;">
+              <span class="text-muted">Método de pago: ${metodo}</span>
+              <span class="text-muted">Total: <span style="color:var(--accent-2);font-family:var(--font-mono)">$${total.toFixed(2)}</span></span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    container.innerHTML = '';
+    showAlert('Error al cargar órdenes: ' + e.message, 'danger', document.getElementById('alert-area'));
+  }
+}
+
+loadOrdenes();
+</script>
+</body>
+</html>

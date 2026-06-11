@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaijudo — Panel Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .product-thumb{width:40px;height:40px;object-fit:cover;background:var(--paper-2)}
+    .product-thumb-placeholder{width:40px;height:40px;background:var(--paper-2);display:flex;align-items:center;justify-content:center;color:var(--ink-4);flex-shrink:0}
+    .sesion-item{padding:.65rem .85rem;border:1.5px solid var(--rule);cursor:pointer;transition:var(--trans);margin-bottom:.4rem}
+    .sesion-item:hover{border-color:var(--ink);background:var(--paper-2)}
+    .sesion-item.selected{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+    .sesion-item.selected .text-muted{color:rgba(245,240,232,.55)}
+    .img-drop-zone{border:2px dashed var(--rule-h);padding:1.5rem;text-align:center;cursor:pointer;transition:var(--trans);position:relative;background:var(--paper-2)}
+    .img-drop-zone:hover,.img-drop-zone.dragover{border-color:var(--red);background:var(--red-dim)}
+    .img-drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .img-drop-zone svg{color:var(--ink-4);margin-bottom:.5rem}
+    .img-drop-zone p{font-size:.82rem;color:var(--ink-2);font-weight:700;font-family:var(--font-mono)}
+    .img-drop-zone small{font-size:.68rem;color:var(--ink-3);font-family:var(--font-mono)}
+    #img-preview-container{margin-top:.75rem;overflow:hidden;border:1.5px solid var(--rule);position:relative}
+    #img-preview-container img{width:100%;height:140px;object-fit:cover;display:block}
+    .preview-remove{position:absolute;top:6px;right:6px;width:26px;height:26px;background:rgba(28,24,18,.8);border:none;color:var(--paper);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--trans)}
+    .preview-remove:hover{background:var(--red)}
+    .existing-img-badge{position:absolute;bottom:6px;left:6px;font-size:.6rem;font-family:var(--font-mono);background:rgba(28,24,18,.85);padding:.2rem .5rem;color:var(--paper);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .table-img-cell{display:flex;align-items:center}
+    .hero-manager{background:var(--paper);border:1.5px solid var(--rule);padding:1.25rem;margin-bottom:1.5rem;display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:center}
+    .hero-preview-wrap{width:160px;height:80px;background:var(--ink);border:1.5px solid var(--rule);overflow:hidden;position:relative;flex-shrink:0}
+    .hero-preview-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .hero-preview-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(245,240,232,.2)}
+    .hero-drop{border:2px dashed var(--rule-h);padding:1rem;text-align:center;cursor:pointer;position:relative;background:var(--paper-2);transition:var(--trans)}
+    .hero-drop:hover,.hero-drop.dragover{border-color:var(--red);background:var(--red-dim)}
+    .hero-drop input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .sesion-actions{display:flex;gap:.35rem;margin-top:.5rem}
+    .chat-panel{display:flex;flex-direction:column;height:100%}
+    .chat-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+    .admin-chat-messages{height:340px;background:var(--paper-2);padding:.75rem;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem}
+    .admin-chat-input-area{display:flex;gap:.5rem;margin-top:.6rem;padding-top:.6rem;border-top:1.5px solid var(--rule)}
+    .admin-chat-input{flex:1;background:var(--paper-2);border:1.5px solid var(--rule-h);padding:.5rem .85rem;color:var(--ink);font-size:.85rem;font-family:var(--font)}
+    .admin-chat-input:focus{outline:none;border-color:var(--ink)}
+    .admin-chat-input:disabled{opacity:.4;cursor:not-allowed}
+    .ws-status{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--font-mono);font-size:.68rem}
+    .ws-dot{width:6px;height:6px;border-radius:50%}
+    .ws-dot.conectado{background:var(--green);box-shadow:0 0 5px var(--green)}
+    .ws-dot.desconectado{background:var(--ink-4)}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-brand">Kai<em style="color:var(--red);font-style:italic">judo</em><span style="font-family:var(--font-mono);font-size:.6rem;color:var(--ink-3);margin-left:.4rem;letter-spacing:.1em;text-transform:uppercase;">· Admin</span></a>
+  <div class="nav-links">
+    <a href="../index.html" class="flex align-center gap-1" style="color:var(--ink-2);font-family:var(--font-mono);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Ver tienda</a>
+    <span id="nav-username" style="font-size:.72rem;color:var(--ink-2);font-family:var(--font-mono);font-weight:700;text-transform:uppercase;letter-spacing:.06em;"></span>
+    <button class="btn btn-ghost btn-sm flex align-center gap-1" onclick="logout()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Salir</button>
+  </div>
+</nav>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-section">Gestión</div>
+    <a href="#" class="active" id="nav-productos" onclick="return showSection('productos')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>Productos</a>
+    <a href="#" id="nav-ordenes" onclick="return showSection('ordenes')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Órdenes</a>
+    <a href="#" id="nav-chat" onclick="return showSection('chat')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</a>
+    <a href="#" id="nav-faq" onclick="return showSection('faq')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>FAQs</a>
+  </aside>
+  <main class="admin-content">
+    <div id="alert-area"></div>
+
+    <!-- PRODUCTOS -->
+    <div id="section-productos">
+      <div class="flex-between mb-3">
+        <div><p class="section-label mb-1">Catálogo</p><h2 class="page-title">Gestión de <span>Productos</span></h2></div>
+        <button class="btn btn-primary" onclick="openProductoModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5v14"/></svg>Nuevo producto</button>
+      </div>
+      <div class="hero-manager">
+        <div>
+          <div class="section-label mb-1">Imagen del Hero</div>
+          <p style="font-size:.82rem;color:var(--ink-2);margin-bottom:.75rem;">Esta imagen aparece en el panel derecho del hero principal de la tienda.</p>
+          <div class="hero-drop" id="hero-drop-zone">
+            <input type="file" id="hero-file" accept="image/jpeg,image/png,image/webp" onchange="uploadHero(this)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <p style="font-size:.72rem;font-family:var(--font-mono);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2);margin-top:.3rem;">Subir imagen del hero</p>
+            <small style="font-family:var(--font-mono);color:var(--ink-3)">JPG, PNG, WebP · máx 5 MB</small>
+          </div>
+        </div>
+        <div>
+          <div class="section-label mb-1">Vista previa actual</div>
+          <div class="hero-preview-wrap" id="hero-preview-admin"><div class="hero-preview-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div></div>
+          <button onclick="removeHero()" class="btn btn-danger btn-sm w-100" style="margin-top:.5rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Quitar imagen</button>
+        </div>
+      </div>
+      <div class="stats-row" id="products-stats"></div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Imagen</th><th>Producto</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead><tbody id="tbody-productos"><tr><td colspan="5"><div class="skeleton" style="height:40px;margin:.5rem 0;"></div></td></tr></tbody></table></div></div>
+    </div>
+
+    <!-- ORDENES -->
+    <div id="section-ordenes" class="hidden">
+      <div class="flex-between mb-3">
+        <div><p class="section-label mb-1">Ventas</p><h2 class="page-title">Gestión de <span>Órdenes</span></h2></div>
+        <div class="search-wrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="ordenes-search" placeholder="Buscar orden..."></div>
+      </div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Método</th><th>Estado</th><th>Fecha</th><th>Acción</th></tr></thead><tbody id="tbody-ordenes"><tr><td colspan="7"><div class="skeleton" style="height:40px;margin:.5rem 0;"></div></td></tr></tbody></table></div></div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="section-chat" class="hidden">
+      <div class="mb-3"><p class="section-label mb-1">Soporte</p><h2 class="page-title">Conversaciones de <span>Chat</span></h2></div>
+      <div class="grid-2" style="align-items:start;grid-template-columns:1fr 1.2fr;">
+        <div class="card card-p">
+          <div class="flex-between mb-2">
+            <h4 style="font-size:.875rem;font-weight:700;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;">Sesiones</h4>
+            <div class="flex gap-1">
+              <button class="btn btn-ghost btn-sm" onclick="loadSesiones()" title="Actualizar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/></svg></button>
+              <button class="btn btn-danger btn-sm" onclick="eliminarSesionesCerradas()">Limpiar cerradas</button>
+            </div>
+          </div>
+          <div id="lista-sesiones"></div>
+        </div>
+        <div class="card card-p chat-panel">
+          <div class="chat-panel-header">
+            <h4 style="font-size:.875rem;font-weight:700;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;">Mensajes</h4>
+            <div class="ws-status" id="ws-status"><span class="ws-dot desconectado" id="ws-dot"></span><span id="ws-label" style="color:var(--ink-3)">Sin sesión activa</span></div>
+          </div>
+          <div class="admin-chat-messages" id="detalle-chat">
+            <p class="text-muted text-center" style="margin-top:3rem;font-size:.85rem;">Selecciona una sesión para ver los mensajes.</p>
+          </div>
+          <div class="admin-chat-input-area">
+            <input type="text" id="admin-chat-input" class="admin-chat-input" placeholder="Selecciona una sesión para responder..." disabled onkeydown="if(event.key==='Enter')enviarRespuestaAdmin()">
+            <button class="btn btn-primary btn-sm" id="admin-send-btn" onclick="enviarRespuestaAdmin()" disabled style="flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div id="section-faq" class="hidden">
+      <div class="flex-between mb-3">
+        <div><p class="section-label mb-1">Automatización</p><h2 class="page-title">Preguntas <span>Frecuentes</span></h2></div>
+        <button class="btn btn-primary" onclick="toggleFaqForm()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5v14"/></svg>Nueva FAQ</button>
+      </div>
+      <div id="faq-form-wrap" class="card card-p hidden" style="margin-bottom:1.25rem;">
+        <h4 style="font-size:.875rem;font-weight:700;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;">Nueva respuesta automática</h4>
+        <div class="form-row">
+          <div class="form-group"><label>Palabras clave</label><input type="text" id="faq-keywords" placeholder="envio tiempo dias entrega"><p class="input-hint">Separadas por espacio</p></div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:1.1rem;"><button class="btn btn-primary w-100" onclick="createFaq()">Guardar FAQ</button></div>
+        </div>
+        <div class="form-group"><label>Respuesta automática</label><textarea id="faq-respuesta" placeholder="El tiempo de entrega estándar es de 3 a 5 días hábiles..." rows="3"></textarea></div>
+      </div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Palabras clave</th><th>Respuesta</th><th>Acción</th></tr></thead><tbody id="tbody-faqs"></tbody></table></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL PRODUCTO -->
+<div class="modal-overlay hidden" id="modal-producto">
+  <div class="modal" style="max-width:560px;" onclick="event.stopPropagation()">
+    <div class="modal-header"><span class="modal-title" id="modal-titulo">Nuevo Producto</span><button class="modal-close" onclick="closeProductoModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <input type="hidden" id="producto-id">
+    <div class="form-group"><label>Nombre del producto</label><input type="text" id="p-nombre" placeholder="Spider-Man Classic Series"></div>
+    <div class="form-group"><label>Descripción</label><textarea id="p-desc" placeholder="Descripción detallada del producto..." rows="3"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Precio (MXN)</label><input type="number" id="p-precio" step="0.01" min="0" placeholder="599.99"></div>
+      <div class="form-group"><label>Stock disponible</label><input type="number" id="p-stock" min="0" step="1" placeholder="10"></div>
+    </div>
+    <div class="form-group">
+      <label>Imagen del producto</label>
+      <div class="img-drop-zone" id="drop-zone">
+        <input type="file" id="p-imagen" accept="image/jpeg,image/png,image/webp" onchange="handleImageChange(this)">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p>Arrastra una imagen o haz clic para seleccionar</p>
+        <small>JPG, PNG, WebP — máx 5 MB</small>
+      </div>
+      <div id="img-preview-container" class="hidden">
+        <img id="img-preview" src="" alt="Vista previa">
+        <span class="existing-img-badge" id="img-badge">nueva imagen</span>
+        <button class="preview-remove" type="button" onclick="clearImage()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeProductoModal()">Cancelar</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveProducto()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Guardar producto</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+var user = getUser();
+if (!user || !isOperador()) window.location.href = 'login.html';
+document.getElementById('nav-username').textContent = user ? user.nombre : '';
+
+var SECTIONS = ['productos','ordenes','chat','faq'];
+var allOrdenes = [];
+var adminWs = null;
+var sesionActivaId = null;
+
+function showSection(name) {
+  SECTIONS.forEach(function(s) {
+    document.getElementById('section-' + s).classList.toggle('hidden', s !== name);
+    document.getElementById('nav-' + s).classList.toggle('active', s === name);
+  });
+  if (name === 'productos') loadProductos();
+  if (name === 'ordenes')   loadOrdenes();
+  if (name === 'chat')      loadSesiones();
+  if (name === 'faq')       loadFaqs();
+  return false;
+}
+
+/* HERO */
+async function loadHeroPreview() {
+  var wrap = document.getElementById('hero-preview-admin');
+  var exts = ['jpg','jpeg','png','webp'];
+  for (var i = 0; i < exts.length; i++) {
+    var url = API + '/static/images/hero.' + exts[i] + '?t=' + Date.now();
+    try {
+      var res = await fetch(url, { method: 'HEAD' });
+      if (res.ok) { wrap.innerHTML = '<img src="' + url + '" alt="Hero">'; return; }
+    } catch(e) {}
+  }
+  wrap.innerHTML = '<div class="hero-preview-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>';
+}
+async function uploadHero(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { showToast('La imagen no debe superar 5 MB','error'); input.value=''; return; }
+  var form = new FormData();
+  form.append('imagen', file);
+  try { await request('POST','/productos/hero',form,true); showToast('Imagen del hero actualizada'); input.value=''; loadHeroPreview(); }
+  catch(e) { showAlert(e.message,'danger',document.getElementById('alert-area')); }
+}
+async function removeHero() {
+  if (!confirm('¿Quitar la imagen del hero?')) return;
+  try { await request('DELETE','/productos/hero'); showToast('Imagen del hero eliminada'); loadHeroPreview(); }
+  catch(e) { showAlert(e.message,'danger',document.getElementById('alert-area')); }
+}
+var heroDrop = document.getElementById('hero-drop-zone');
+['dragenter','dragover'].forEach(function(ev) { heroDrop.addEventListener(ev, function(e) { e.preventDefault(); heroDrop.classList.add('dragover'); }); });
+['dragleave','drop'].forEach(function(ev) { heroDrop.addEventListener(ev, function(e) { e.preventDefault(); heroDrop.classList.remove('dragover'); }); });
+heroDrop.addEventListener('drop', function(e) {
+  var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    var dt = new DataTransfer(); dt.items.add(file);
+    var inp = document.getElementById('hero-file');
+    inp.files = dt.files; uploadHero(inp);
+  }
+});
+
+/* PRODUCTOS */
+async function loadProductos() {
+  var tbody = document.getElementById('tbody-productos');
+  tbody.innerHTML = '<tr><td colspan="5"><div class="skeleton" style="height:40px;margin:.25rem 0;"></div></td></tr>'.repeat(4);
+  try {
+    var lista = await Productos.list();
+    loadHeroPreview();
+    var stats = document.getElementById('products-stats');
+    var total = lista.length;
+    var inStock = lista.filter(function(p){return p.stock>0}).length;
+    var outStock = lista.filter(function(p){return p.stock===0}).length;
+    var avgPrice = total ? lista.reduce(function(s,p){return s+p.precio},0)/total : 0;
+    stats.innerHTML = [
+      {label:'Total',value:total,color:'var(--ink)'},
+      {label:'En stock',value:inStock,color:'var(--green)'},
+      {label:'Sin stock',value:outStock,color:'var(--red)'},
+      {label:'Precio promedio',value:'$'+avgPrice.toFixed(0),color:'var(--gold)'}
+    ].map(function(s){return '<div class="stat-card"><div class="stat-label">'+s.label+'</div><div class="stat-value" style="color:'+s.color+'">'+s.value+'</div></div>'}).join('');
+    if (!lista.length) { tbody.innerHTML='<tr><td colspan="5"><div class="empty-state" style="padding:2rem;"><h3>Sin productos</h3><p>Crea el primer producto.</p></div></td></tr>'; return; }
+    tbody.innerHTML = lista.map(function(p) {
+      var imgCell = p.imagen_url
+        ? '<div class="table-img-cell"><img src="'+imgSrc(p.imagen_url)+'" class="product-thumb" alt="'+p.nombre+'"></div>'
+        : '<div class="product-thumb-placeholder"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>';
+      var stockCell = p.stock===0
+        ? '<span style="color:var(--red);font-family:var(--font-mono);font-size:.8rem">0</span>'
+        : p.stock<=5
+          ? '<span style="color:var(--gold);font-family:var(--font-mono);font-size:.8rem">'+p.stock+'</span>'
+          : '<span style="font-family:var(--font-mono);font-size:.8rem">'+p.stock+'</span>';
+      var deleteBtn = isAdmin()
+        ? '<button class="btn btn-danger btn-sm" onclick="deleteProducto('+p.id+')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
+        : '';
+      var pJson = JSON.stringify(p).replace(/"/g,'&quot;');
+      return '<tr><td>'+imgCell+'</td><td><div style="font-weight:700;font-size:.875rem;font-family:var(--font-display);font-style:italic;">'+p.nombre+'</div><div class="text-muted" style="font-size:.72rem;font-family:var(--font-mono);">'+((p.descripcion||'').substring(0,60))+((p.descripcion||'').length>60?'…':'')+'</div></td><td style="font-family:var(--font-mono);color:var(--red);font-size:.875rem;font-weight:700;">$'+p.precio.toFixed(2)+'</td><td>'+stockCell+'</td><td><div class="flex gap-1"><button class="btn btn-secondary btn-sm flex align-center gap-1" onclick="openProductoModal('+pJson+')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>Editar</button>'+deleteBtn+'</div></td></tr>';
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML='<tr><td colspan="5" class="text-muted" style="padding:1rem">Error: '+e.message+'</td></tr>';
+    showAlert('Error al cargar productos: '+e.message,'danger',document.getElementById('alert-area'));
+  }
+}
+function openProductoModal(p) {
+  p = p || null;
+  var isEdit = !!p;
+  document.getElementById('producto-id').value = p ? p.id : '';
+  document.getElementById('modal-titulo').textContent = isEdit ? 'Editar Producto' : 'Nuevo Producto';
+  document.getElementById('p-nombre').value = p ? p.nombre : '';
+  document.getElementById('p-desc').value = p ? p.descripcion : '';
+  document.getElementById('p-precio').value = p ? p.precio : '';
+  document.getElementById('p-stock').value = p ? p.stock : '';
+  document.getElementById('p-imagen').value = '';
+  var previewWrap = document.getElementById('img-preview-container');
+  if (isEdit && p.imagen_url) {
+    document.getElementById('img-preview').src = imgSrc(p.imagen_url);
+    document.getElementById('img-badge').textContent = 'imagen actual';
+    previewWrap.classList.remove('hidden');
+  } else { previewWrap.classList.add('hidden'); }
+  document.getElementById('modal-producto').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeProductoModal() { document.getElementById('modal-producto').classList.add('hidden'); document.body.style.overflow = ''; }
+function handleImageChange(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { showToast('La imagen no debe superar 5 MB','error'); input.value=''; return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('img-preview').src = e.target.result;
+    document.getElementById('img-badge').textContent = 'nueva imagen';
+    document.getElementById('img-preview-container').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+function clearImage() { document.getElementById('p-imagen').value=''; document.getElementById('img-preview-container').classList.add('hidden'); }
+var dropZone = document.getElementById('drop-zone');
+['dragenter','dragover'].forEach(function(ev){dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.add('dragover')})});
+['dragleave','drop'].forEach(function(ev){dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.remove('dragover')})});
+dropZone.addEventListener('drop',function(e){
+  var file=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(file&&file.type.startsWith('image/')){var dt=new DataTransfer();dt.items.add(file);var inp=document.getElementById('p-imagen');inp.files=dt.files;handleImageChange(inp);}
+});
+async function saveProducto() {
+  var id=document.getElementById('producto-id').value;
+  var nombre=document.getElementById('p-nombre').value.trim();
+  var desc=document.getElementById('p-desc').value.trim();
+  var precio=document.getElementById('p-precio').value;
+  var stock=document.getElementById('p-stock').value;
+  if (!nombre||!precio||stock==='') return showAlert('Nombre, precio y stock son requeridos','danger',document.getElementById('alert-area'));
+  var form=new FormData();
+  form.append('nombre',nombre);form.append('descripcion',desc);form.append('precio',precio);form.append('stock',stock);
+  var imgFile=document.getElementById('p-imagen').files[0];
+  if (imgFile) form.append('imagen',imgFile);
+  var btn=document.getElementById('save-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>';
+  try {
+    if (id) await Productos.update(id,form); else await Productos.create(form);
+    closeProductoModal();loadProductos();showToast(id?'Producto actualizado':'Producto creado');
+  } catch(e) { showAlert(e.message,'danger',document.getElementById('alert-area')); }
+  finally { btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Guardar producto'; }
+}
+async function deleteProducto(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  try { await Productos.delete(id);loadProductos();showToast('Producto eliminado'); }
+  catch(e) { showAlert(e.message,'danger',document.getElementById('alert-area')); }
+}
+
+/* ORDENES */
+async function loadOrdenes() {
+  var tbody=document.getElementById('tbody-ordenes');
+  tbody.innerHTML='<tr><td colspan="7"><div class="skeleton" style="height:40px;margin:.25rem 0;"></div></td></tr>'.repeat(4);
+  try { allOrdenes=await Ordenes.list();renderOrdenesTable(allOrdenes); }
+  catch(e) { tbody.innerHTML='<tr><td colspan="7" class="text-muted" style="padding:1rem">Error: '+e.message+'</td></tr>'; }
+}
+function renderOrdenesTable(lista) {
+  var tbody=document.getElementById('tbody-ordenes');
+  if (!lista.length) { tbody.innerHTML='<tr><td colspan="7"><div class="empty-state" style="padding:2rem;"><h3>Sin órdenes</h3></div></td></tr>'; return; }
+  tbody.innerHTML=lista.map(function(o){
+    var total=(o.items||[]).reduce(function(s,i){return s+(i.subtotal!=null?i.subtotal:i.precio_unitario*i.cantidad)},0);
+    var metodo=(o.metodo_pago||'—').replace(/_/g,' ');
+    var fechaRaw=o.fecha||o.fecha_creacion;
+    var fechaStr=fechaRaw?new Date(fechaRaw).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    var canCancel=isAdmin()&&(o.estado==='pendiente'||o.estado==='confirmada');
+    return '<tr><td><span style="font-family:var(--font-mono);font-size:.78rem;color:var(--ink-3)">#'+o.id+'</span></td><td>'+( o.perfil_id||'—')+'</td><td style="font-family:var(--font-mono);color:var(--red);font-size:.875rem;font-weight:700">$'+Number(total).toFixed(2)+'</td><td style="font-size:.8rem;color:var(--ink-2);font-family:var(--font-mono)">'+metodo+'</td><td><span class="badge badge-'+o.estado+'">'+o.estado+'</span></td><td style="font-size:.72rem;color:var(--ink-3);font-family:var(--font-mono)">'+fechaStr+'</td><td>'+(canCancel?'<button class="btn btn-danger btn-sm" onclick="cancelarOrden('+o.id+')">Cancelar</button>':'<span class="text-muted" style="font-size:.72rem">—</span>')+'</td></tr>';
+  }).join('');
+}
+async function cancelarOrden(id) {
+  if (!confirm('¿Cancelar esta orden?')) return;
+  try { await Ordenes.cancelar(id);loadOrdenes();showToast('Orden cancelada'); }
+  catch(e) { showAlert(e.message,'danger',document.getElementById('alert-area')); }
+}
+document.getElementById('ordenes-search').addEventListener('input',function(e){
+  var q=e.target.value.toLowerCase();
+  renderOrdenesTable(allOrdenes.filter(function(o){return String(o.id).includes(q)||o.estado.includes(q)||String(o.perfil_id).includes(q)}));
+});
+
+/* CHAT */
+async function loadSesiones() {
+  var lista=document.getElementById('lista-sesiones');
+  lista.innerHTML='<div class="skeleton" style="height:48px;margin-bottom:.4rem"></div>'.repeat(3);
+  try {
+    var sesiones=await Chat.sesiones();
+    if (!sesiones.length) { lista.innerHTML='<p class="text-muted" style="font-size:.85rem;text-align:center;padding:1rem;">Sin sesiones</p>'; return; }
+    lista.innerHTML=sesiones.map(function(s){
+      var activa=s.estado==='activa';
+      var cerrarBtn=activa?'<button class="btn btn-ghost btn-sm" onclick="cerrarSesionChat(\''+s.id+'\')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>Cerrar</button>':'';
+      return '<div class="sesion-item" id="sesion-'+s.id+'" onclick="selectSesion(\''+s.id+'\',this)"><div class="flex-between mb-1"><span style="font-family:var(--font-mono);font-size:.68rem;color:var(--ink-3)">'+s.id.substring(0,22)+'…</span><span class="badge badge-'+s.estado+'">'+s.estado+'</span></div><div style="font-size:.72rem;color:var(--ink-3);font-family:var(--font-mono);margin-bottom:.35rem">'+new Date(s.fecha_inicio).toLocaleString('es-MX')+'</div><div class="sesion-actions" onclick="event.stopPropagation()">'+cerrarBtn+'<button class="btn btn-danger btn-sm" onclick="eliminarSesionChat(\''+s.id+'\')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Eliminar</button></div></div>';
+    }).join('');
+  } catch(e) { lista.innerHTML='<p class="text-muted" style="font-size:.8rem">'+e.message+'</p>'; }
+}
+
+function selectSesion(id, el) {
+  document.querySelectorAll('.sesion-item').forEach(function(i){i.classList.remove('selected')});
+  el.classList.add('selected');
+  conectarAdminWs(id);
+  loadHistorial(id);
+}
+
+function conectarAdminWs(sesionId) {
+  if (adminWs) {
+    adminWs.onopen = null;
+    adminWs.onmessage = null;
+    adminWs.onclose = null;
+    adminWs.onerror = null;
+    adminWs.close();
+    adminWs = null;
+  }
+  sesionActivaId = sesionId;
+  var ws = new WebSocket('ws://localhost:8000/ws/admin/chat/' + sesionId);
+  ws.onopen = function() {
+    adminWs = ws;
+    setWsStatus(true);
+    habilitarInputAdmin(true);
+  };
+  ws.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+    if (data.tipo === 'mensaje_cliente') {
+      appendAdminMsg(data.contenido, 'cliente');
+    }
+  };
+  ws.onclose = function() {
+    if (adminWs === ws) {
+      adminWs = null;
+      setWsStatus(false);
+      habilitarInputAdmin(false);
+    }
+  };
+  ws.onerror = function() {
+    if (adminWs === ws) {
+      adminWs = null;
+      setWsStatus(false);
+      habilitarInputAdmin(false);
+    }
+  };
+}
+
+function setWsStatus(conectado) {
+  var dot=document.getElementById('ws-dot');
+  var label=document.getElementById('ws-label');
+  if (conectado) { dot.className='ws-dot conectado'; label.textContent='Conectado — en vivo'; label.style.color='var(--green)'; }
+  else { dot.className='ws-dot desconectado'; label.textContent='Sin conexión en vivo'; label.style.color='var(--ink-3)'; }
+}
+function habilitarInputAdmin(habilitar) {
+  var input=document.getElementById('admin-chat-input');
+  var btn=document.getElementById('admin-send-btn');
+  input.disabled=!habilitar;
+  btn.disabled=!habilitar;
+  input.placeholder=habilitar?'Escribe tu respuesta...':'Selecciona una sesión para responder...';
+}
+function enviarRespuestaAdmin() {
+  var input=document.getElementById('admin-chat-input');
+  var texto=input.value.trim();
+  if (!texto) return;
+  if (adminWs && adminWs.readyState===1) {
+    adminWs.send(texto);
+    appendAdminMsg(texto,'asistente');
+  } else if (sesionActivaId) {
+    request('POST','/chat/sesion/'+sesionActivaId+'/responder',{contenido:texto})
+      .then(function(){appendAdminMsg(texto,'asistente')})
+      .catch(function(e){showToast(e.message,'error')});
+  }
+  input.value='';
+}
+function appendAdminMsg(texto, origen) {
+  var detalle=document.getElementById('detalle-chat');
+  var ph=detalle.querySelector('p.text-muted');
+  if (ph) ph.remove();
+  var div=document.createElement('div');
+  div.className='chat-bubble bubble-'+origen;
+  div.style.cssText='max-width:90%;margin-bottom:.4rem;';
+  div.innerHTML='<div style="font-size:.62rem;opacity:.5;margin-bottom:.1rem;font-family:var(--font-mono);">'+(origen==='asistente'?'tú (admin)':'cliente')+'</div>'+texto;
+  detalle.appendChild(div);
+  detalle.scrollTop=detalle.scrollHeight;
+}
+async function loadHistorial(sesionId) {
+  var detalle=document.getElementById('detalle-chat');
+  detalle.innerHTML='<div class="spinner" style="margin:3rem auto;display:block;"></div>';
+  try {
+    var msgs=await Chat.historial(sesionId);
+    if (!msgs.length) { detalle.innerHTML='<p class="text-muted text-center" style="margin-top:3rem;font-size:.85rem;">Sin mensajes aún.</p>'; return; }
+    detalle.innerHTML=msgs.map(function(m){
+      var quien=m.origen==='asistente'?(m.es_automatico?'bot':'admin'):'cliente';
+      return '<div class="chat-bubble bubble-'+m.origen+'" style="max-width:90%;margin-bottom:.4rem;"><div style="font-size:.62rem;opacity:.5;margin-bottom:.1rem;font-family:var(--font-mono);">'+quien+'</div>'+m.contenido+'</div>';
+    }).join('');
+    detalle.scrollTop=detalle.scrollHeight;
+  } catch(e) { detalle.innerHTML='<p class="text-muted text-center" style="margin-top:3rem;font-size:.85rem;">Error al cargar.</p>'; }
+}
+async function cerrarSesionChat(id) {
+  if (!confirm('¿Cerrar esta sesión?')) return;
+  try {
+    await Chat.cerrar(id);
+    if (sesionActivaId===id && adminWs) { adminWs.close(); adminWs=null; }
+    loadSesiones(); showToast('Sesión cerrada');
+  } catch(e) { showAlert(e.message,'danger',document.getElementById('alert-area')); }
+}
+async function eliminarSesionChat(id) {
+  if (!confirm('¿Eliminar esta sesión y todos sus mensajes?')) return;
+  try {
+    await request('DELETE','/chat/sesion/'+id);
+    if (sesionActivaId===id) {
+      if (adminWs) { adminWs.close(); adminWs=null; }
+      sesionActivaId=null; habilitarInputAdmin(false); setWsStatus(false);
+      document.getElementById('detalle-chat').innerHTML='<p class="text-muted text-center" style="margin-top:3rem;font-size:.85rem;">Selecciona una sesión.</p>';
+    }
+    loadSesiones(); showToast('Sesión eliminada');
+  } catch(e) { showAlert(e.message,'danger',document.getElementById('alert-area')); }
+}
+async function eliminarSesionesCerradas() {
+  if (!confirm('¿Eliminar todas las sesiones cerradas y sus mensajes?')) return;
+  try {
+    var r=await request('DELETE','/chat/sesiones/cerradas');
+    loadSesiones(); showToast(r.eliminadas+' sesiones eliminadas');
+  } catch(e) { showAlert(e.message,'danger',document.getElementById('alert-area')); }
+}
+
+/* FAQ */
+var faqFormOpen=false;
+function toggleFaqForm(){faqFormOpen=!faqFormOpen;document.getElementById('faq-form-wrap').classList.toggle('hidden',!faqFormOpen);}
+async function loadFaqs(){
+  var tbody=document.getElementById('tbody-faqs');
+  tbody.innerHTML='<tr><td colspan="3"><div class="skeleton" style="height:40px;margin:.25rem 0;"></div></td></tr>'.repeat(2);
+  try {
+    var lista=await Faq.list();
+    if (!lista.length){tbody.innerHTML='<tr><td colspan="3"><div class="empty-state" style="padding:1.5rem;"><h3>Sin FAQs</h3></div></td></tr>';return;}
+    tbody.innerHTML=lista.map(function(f){
+      var chips=f.palabras_clave.split(' ').map(function(k){return '<span style="background:var(--paper-2);border:1px solid var(--rule);padding:.1rem .4rem;font-size:.68rem;font-family:var(--font-mono)">'+k+'</span>'}).join('');
+      return '<tr><td><div style="display:flex;flex-wrap:wrap;gap:.3rem;">'+chips+'</div></td><td style="font-size:.875rem;max-width:300px;">'+f.respuesta.substring(0,90)+(f.respuesta.length>90?'…':'')+'</td><td><button class="btn btn-danger btn-sm" onclick="deleteFaq('+f.id+')">Eliminar</button></td></tr>';
+    }).join('');
+  } catch(e){tbody.innerHTML='<tr><td colspan="3" class="text-muted" style="padding:1rem">Error: '+e.message+'</td></tr>';}
+}
+async function createFaq(){
+  var kw=document.getElementById('faq-keywords').value.trim();
+  var rs=document.getElementById('faq-respuesta').value.trim();
+  if (!kw||!rs) return showAlert('Completa palabras clave y respuesta','danger',document.getElementById('alert-area'));
+  try {
+    await Faq.create({palabras_clave:kw,respuesta:rs});
+    document.getElementById('faq-keywords').value=''; document.getElementById('faq-respuesta').value='';
+    toggleFaqForm();loadFaqs();showToast('FAQ creada');
+  } catch(e){showAlert(e.message,'danger',document.getElementById('alert-area'));}
+}
+async function deleteFaq(id){
+  if (!confirm('¿Eliminar esta FAQ?')) return;
+  try{await Faq.delete(id);loadFaqs();showToast('FAQ eliminada');}
+  catch(e){showAlert(e.message,'danger',document.getElementById('alert-area'));}
+}
+
+document.getElementById('modal-producto').addEventListener('click',function(e){if(e.target===this)closeProductoModal();});
+loadProductos();
+</script>
+</body>
+</html>

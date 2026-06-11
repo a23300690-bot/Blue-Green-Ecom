@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="7">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaijudo — Figuras de acción · Edición 2026</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <span class="masthead-issue">Vol. I · 2026</span>
+  <div class="masthead-ticker">
+    <div class="masthead-track">
+      <span>Envío gratis en compras mayores a <strong>$999 MXN</strong></span>
+      <span>Tiempo de entrega <strong>3–5 días hábiles</strong></span>
+      <span>Cambios y devoluciones <strong>dentro de 2 días</strong></span>
+      <span>Atención <strong>Lun–Vie 9:00–18:00 hrs</strong></span>
+      <span>Envío gratis en compras mayores a <strong>$999 MXN</strong></span>
+      <span>Tiempo de entrega <strong>3–5 días hábiles</strong></span>
+      <span>Cambios y devoluciones <strong>dentro de 2 días</strong></span>
+      <span>Atención <strong>Lun–Vie 9:00–18:00 hrs</strong></span>
+    </div>
+  </div>
+  <span style="font-family:var(--font-mono);font-size:.6rem;letter-spacing:.12em;color:rgba(245,240,232,.4)">GDL· MX</span>
+</div>
+
+<!-- NAV — solo brand + carrito, menú va al sidebar -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    Kai<em style="color:var(--red);font-style:italic">judo</em>
+    <span class="nav-brand-sub">·&nbsp;Figuras de acción</span>
+  </a>
+  <div class="nav-links">
+    <button class="btn btn-ghost btn-sm flex align-center gap-1" id="cart-btn" style="position:relative">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Carrito <span class="nav-badge cart-count hidden">0</span>
+    </button>
+    <button onclick="toggleSidebar()" style="background:var(--ink);border:none;color:var(--paper);font-family:var(--font-mono);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;padding:.5rem .9rem;cursor:pointer;display:flex;align-items:center;gap:.5rem;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Menú
+    </button>
+  </div>
+</nav>
+
+<!-- NAV SIDEBAR -->
+<div id="nav-sidebar" style="position:fixed;top:0;right:-260px;width:260px;height:100vh;background:var(--ink);border-left:2px solid var(--red);z-index:400;transition:right .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;padding:2rem 1.5rem;gap:.15rem;box-shadow:-6px 0 32px rgba(28,24,18,.3);background-image:var(--grain);overflow-y:auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(245,240,232,.12);">
+    <span style="font-family:var(--font-display);font-size:1.15rem;font-weight:900;font-style:italic;color:var(--paper);">Kai<em style="color:var(--red)">judo</em></span>
+    <button onclick="closeSidebar()" style="background:none;border:none;color:rgba(245,240,232,.5);cursor:pointer;display:flex;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <a href="index.html" class="snav-link">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Catálogo
+  </a>
+
+  <!-- Sin sesión -->
+  <div id="snav-auth">
+    <a href="pages/login.html" class="snav-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Iniciar sesión
+    </a>
+  </div>
+
+  <!-- Con sesión -->
+  <div id="snav-user" class="hidden">
+    <span id="snav-username" style="display:block;font-family:var(--font-mono);font-size:.6rem;color:var(--red);letter-spacing:.18em;text-transform:uppercase;font-weight:700;padding:.5rem 0 .75rem;border-bottom:1px solid rgba(245,240,232,.08);margin-bottom:.25rem;"></span>
+    <a href="pages/historial.html" class="snav-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg>
+      Mis órdenes
+    </a>
+    <a id="snav-admin" href="pages/admin.html" class="snav-link hidden">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Panel Admin
+    </a>
+    <button onclick="logout()" class="snav-link" style="border:none;background:none;cursor:pointer;width:100%;text-align:left;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Salir
+    </button>
+  </div>
+
+  <button onclick="openCart();closeSidebar();" style="margin-top:auto;background:var(--red);border:none;color:var(--paper);font-family:var(--font-mono);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    Ver carrito <span class="nav-badge cart-count hidden">0</span>
+  </button>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebar-overlay" onclick="closeSidebar()" style="position:fixed;inset:0;background:rgba(28,24,18,.5);z-index:399;opacity:0;pointer-events:none;transition:opacity .2s;"></div>
+
+<style>
+.snav-link {
+  display:flex;align-items:center;gap:.65rem;
+  padding:.6rem 0;
+  border-bottom:1px solid rgba(245,240,232,.07);
+  color:rgba(245,240,232,.55);
+  font-family:var(--font-mono);font-size:.72rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.1em;
+  transition:color .15s;
+}
+.snav-link:hover { color:var(--paper); opacity:1; }
+</style>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div>
+      <p class="hero-issue">— — Edición especial · Temporada 2026</p>
+      <h1 class="hero-title">Las<br>mejores<br><em>figuras.</em></h1>
+      <div class="hero-rule"></div>
+      <p class="hero-sub">Marvel, DC, Anime, Videojuegos y más. El universo de las figuras de acción. Envío a todo México.</p>
+      <div class="hero-actions">
+        <a href="#catalogo" class="btn btn-primary btn-lg">Ver catálogo</a>
+        <a href="pages/login.html" class="btn btn-ghost btn-lg" id="hero-login-btn">Crear cuenta</a>
+      </div>
+    </div>
+    <div style="display:flex;gap:2rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(245,240,232,.12)">
+      <div>
+        <div class="hero-panel-label" style="margin-bottom:.2rem">Colecciones</div>
+        <div style="font-family:var(--font-mono);font-size:.75rem;color:rgba(245,240,232,.5)">Marvel · DC · Anime · Games</div>
+      </div>
+      <div>
+        <div class="hero-panel-label" style="margin-bottom:.2rem">Envío</div>
+        <div style="font-family:var(--font-mono);font-size:.75rem;color:rgba(245,240,232,.5)">Todo México · 3–5 días</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right" id="hero-img-wrap">
+    <div class="hero-panel">
+      <div class="hero-panel-label">Catálogo</div>
+      <div class="hero-panel-val" id="hero-catalog-count">—</div>
+      <div class="hero-panel-sub">figuras disponibles</div>
+    </div>
+    <div class="hero-panel" style="background:rgba(200,40,30,.06);">
+      <div class="hero-panel-label">Garantía</div>
+      <div class="hero-panel-val">100%</div>
+      <div class="hero-panel-sub">productos oficiales licenciados</div>
+    </div>
+  </div>
+</div>
+
+<!-- CATALOG HEADER -->
+<div style="background:var(--paper-2);border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);">
+  <div class="container" style="padding-top:1.25rem;padding-bottom:1.25rem;">
+    <div class="flex-between">
+      <div class="flex align-center gap-2">
+        <h2 class="page-title" id="catalogo">Catálogo</h2>
+        <span id="cat-count" style="font-family:var(--font-mono);font-size:.7rem;color:var(--ink-3);border:1px solid var(--rule);padding:.1rem .5rem;"></span>
+      </div>
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search" placeholder="Buscar figura...">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CATALOG GRID -->
+<div style="border-top:1px solid var(--rule)">
+  <div id="loading-grid" class="grid-4" style="border-left:1.5px solid var(--rule)">
+    <div style="height:320px;border-right:1.5px solid var(--rule)"><div class="skeleton" style="height:100%"></div></div>
+    <div style="height:320px;border-right:1.5px solid var(--rule)"><div class="skeleton" style="height:100%"></div></div>
+    <div style="height:320px;border-right:1.5px solid var(--rule)"><div class="skeleton" style="height:100%"></div></div>
+    <div style="height:320px"><div class="skeleton" style="height:100%"></div></div>
+  </div>
+  <div id="productos-grid" class="grid-4 hidden" style="border-left:1.5px solid var(--rule);border-bottom:1.5px solid var(--rule)"></div>
+  <div id="empty-msg" class="empty-state hidden">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+    <h3>Sin resultados</h3>
+    <p>No se encontraron productos.</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="border-top:2px solid var(--ink);padding:1.25rem 2rem;background:var(--ink);display:flex;align-items:center;justify-content:space-between;">
+  <span style="font-family:var(--font-mono);font-size:.6rem;color:rgba(245,240,232,.35);letter-spacing:.1em;text-transform:uppercase;">© 2026 Kaijudo · Todos los derechos reservados</span>
+  <span style="font-family:var(--font-display);font-size:1rem;font-weight:900;font-style:italic;color:var(--paper)">Kai<em style="color:var(--red)">judo</em></span>
+</div>
+
+<!-- CART OVERLAY + SIDEBAR -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <h3>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Mi carrito
+    </h3>
+    <button class="modal-close" onclick="closeCart()" style="background:rgba(245,240,232,.1);border-color:rgba(245,240,232,.2);color:var(--paper)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span class="text-muted" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-mono)">Total del pedido</span>
+      <span class="cart-total-amount" id="cart-total">$0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 btn-lg" onclick="goCheckout()">Proceder al checkout</button>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay hidden" id="producto-modal" onclick="handleModalClick(event)">
+  <div class="modal product-modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-nombre"></span>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="modal-img-wrap"></div>
+    <p id="modal-desc" class="text-muted mb-2" style="font-size:.875rem;line-height:1.65"></p>
+    <div class="flex-between mb-3">
+      <span class="modal-price" id="modal-precio"></span>
+      <span id="modal-stock" class="text-muted" style="font-size:.72rem;font-family:var(--font-mono);font-weight:700;text-transform:uppercase;letter-spacing:.06em"></span>
+    </div>
+    <div class="qty-input mb-3">
+      <button onclick="adjustQty(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg></button>
+      <input type="number" id="modal-cantidad" value="1" min="1">
+      <button onclick="adjustQty(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg></button>
+    </div>
+    <button class="btn btn-primary w-100 btn-lg" id="modal-add-btn" onclick="addToCartFromModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Agregar al carrito
+    </button>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-box" id="chat-box">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <span class="chat-status-dot"></span>
+        <span>Soporte</span>
+      </div>
+      <button id="chat-close" style="background:none;border:none;color:rgba(245,240,232,.5);cursor:pointer;display:flex">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Escribe un mensaje...">
+      <button id="chat-send" class="btn btn-primary btn-sm" style="flex-shrink:0">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+  <button class="chat-toggle" id="chat-toggle">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </button>
+</div>
+
+<!-- SCRIPTS — api.js debe ir primero siempre -->
+<script src="js/api.js"></script>
+<script src="js/chat.js"></script>
+<script>
+let todosLosProductos = [];
+let productoActual = null;
+
+/* ── SIDEBAR ───────────────────────────────── */
+function toggleSidebar() {
+  const sb = document.getElementById('nav-sidebar');
+  sb.style.right === '0px' ? closeSidebar() : openSidebar();
+}
+function openSidebar() {
+  document.getElementById('nav-sidebar').style.right = '0px';
+  const ov = document.getElementById('sidebar-overlay');
+  ov.style.opacity = '1'; ov.style.pointerEvents = 'all';
+}
+function closeSidebar() {
+  document.getElementById('nav-sidebar').style.right = '-260px';
+  const ov = document.getElementById('sidebar-overlay');
+  ov.style.opacity = '0'; ov.style.pointerEvents = 'none';
+}
+
+
+/* ── HERO IMAGE ────────────────────────────── */
+async function loadHeroImage() {
+  const wrap = document.getElementById('hero-img-wrap');
+  for (const ext of ['jpg','jpeg','png','webp']) {
+    const url = `${API}/static/images/hero.${ext}?t=${Date.now()}`;
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+      if (res.ok) {
+        wrap.innerHTML = `
+          <div class="hero-panel" style="padding:0;overflow:hidden;grid-row:1/3">
+            <img src="${url}" alt="Hero" style="width:100%;height:100%;object-fit:cover;object-position:top center;display:block;">
+          </div>`;
+        return;
+      }
+    } catch {}
+  }
+}
+
+/* ── NAV ───────────────────────────────────── */
+function renderNav() {
+  const user = getUser();
+  if (user) {
+    document.getElementById('snav-auth')?.classList.add('hidden');
+    const su = document.getElementById('snav-user');
+    if (su) su.classList.remove('hidden');
+    const un = document.getElementById('snav-username');
+    if (un) un.textContent = user.nombre;
+    if (isOperador()) document.getElementById('snav-admin')?.classList.remove('hidden');
+    const hlb = document.getElementById('hero-login-btn');
+    if (hlb) hlb.classList.add('hidden');
+  }
+  updateCartBadge();
+}
+
+/* ── PRODUCTOS ─────────────────────────────── */
+async function loadProductos() {
+  try {
+    todosLosProductos = await Productos.list();
+    document.getElementById('loading-grid').classList.add('hidden');
+    const cnt = document.getElementById('hero-catalog-count');
+    if (cnt) cnt.textContent = todosLosProductos.length;
+    const catCnt = document.getElementById('cat-count');
+    if (catCnt) catCnt.textContent = todosLosProductos.length + ' artículos';
+    renderProductos(todosLosProductos);
+  } catch (e) {
+    document.getElementById('loading-grid').classList.add('hidden');
+    const empty = document.getElementById('empty-msg');
+    empty.classList.remove('hidden');
+    empty.querySelector('p').textContent = 'Error al cargar productos.';
+  }
+}
+
+function renderProductos(lista) {
+  const grid  = document.getElementById('productos-grid');
+  const empty = document.getElementById('empty-msg');
+  grid.innerHTML = '';
+  if (!lista.length) {
+    grid.classList.add('hidden');
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  grid.classList.remove('hidden');
+  lista.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'product-card';
+    div.onclick = () => openModal(p);
+    const num = String(i + 1).padStart(3, '0');
+    const imgHtml = p.imagen_url
+      ? `<div class="product-img-wrap"><img src="${imgSrc(p.imagen_url)}" alt="${p.nombre}" onerror="this.closest('.product-img-wrap').innerHTML='<div class=img-placeholder style=height:220px><svg width=40 height=40 viewBox=\\'0 0 24 24\\' fill=none stroke=currentColor stroke-width=1.5><path d=\\'M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\\'/><path d=\\'m3.3 7 8.7 5 8.7-5M12 22V12\\'/></svg></div>'"></div>`
+      : `<div class="product-img-wrap"><div class="img-placeholder" style="height:220px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div></div>`;
+    const stockHtml = p.stock === 0
+      ? `<div class="stock" style="color:var(--red)">Agotado</div>`
+      : p.stock <= 5
+        ? `<div class="stock low">${p.stock} disponibles</div>`
+        : `<div class="stock">En stock · ${p.stock} uds</div>`;
+    div.innerHTML = `
+      ${p.stock === 0 ? '<span class="out-badge">Agotado</span>' : ''}
+      ${imgHtml}
+      <div class="card-body" data-num="Fig. ${num}">
+        <h3>${p.nombre}</h3>
+        <div class="price">$${p.precio.toFixed(2)}</div>
+        ${stockHtml}
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+/* ── MODAL ─────────────────────────────────── */
+function openModal(p) {
+  productoActual = p;
+  document.getElementById('modal-nombre').textContent = p.nombre;
+  document.getElementById('modal-desc').textContent = p.descripcion || '';
+  document.getElementById('modal-precio').textContent = `$${p.precio.toFixed(2)}`;
+  document.getElementById('modal-stock').textContent = p.stock > 0 ? `${p.stock} en stock` : 'Agotado';
+  const wrap = document.getElementById('modal-img-wrap');
+  if (p.imagen_url) {
+    wrap.innerHTML = `<img src="${imgSrc(p.imagen_url)}" class="product-modal-img" alt="${p.nombre}" onerror="this.style.display='none'">`;
+  } else {
+    wrap.innerHTML = `<div class="product-modal-img-placeholder"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>`;
+  }
+  const qty = document.getElementById('modal-cantidad');
+  qty.value = 1; qty.max = p.stock;
+  document.getElementById('modal-add-btn').disabled = p.stock === 0;
+  document.getElementById('producto-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() { document.getElementById('producto-modal').classList.add('hidden'); document.body.style.overflow = ''; }
+function handleModalClick(e) { if (e.target === e.currentTarget) closeModal(); }
+function adjustQty(delta) {
+  const input = document.getElementById('modal-cantidad');
+  input.value = Math.max(1, Math.min(parseInt(input.value) + delta, productoActual?.stock || 99));
+}
+function addToCartFromModal() {
+  if (!productoActual || productoActual.stock === 0) return;
+  const cant = parseInt(document.getElementById('modal-cantidad').value) || 1;
+  Carrito.add(productoActual, cant);
+  closeModal(); renderCart();
+  showToast(`${productoActual.nombre} agregado al carrito`);
+}
+
+/* ── CART ──────────────────────────────────── */
+function openCart() {
+  document.getElementById('cart-sidebar').classList.add('open');
+  document.getElementById('cart-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderCart();
+}
+function closeCart() {
+  document.getElementById('cart-sidebar').classList.remove('open');
+  document.getElementById('cart-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function renderCart() {
+  const items = Carrito.get();
+  const container = document.getElementById('cart-items');
+  container.innerHTML = '';
+  if (!items.length) {
+    container.innerHTML = `<div class="empty-state" style="padding:2rem 1rem"><h3>Carrito vacío</h3><p>Agrega productos desde el catálogo.</p></div>`;
+  } else {
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      const imgHtml = item.imagen_url
+        ? `<img src="${imgSrc(item.imagen_url)}" alt="${item.nombre}" onerror="this.style.display='none'">`
+        : `<div class="cart-item-thumb-placeholder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>`;
+      div.innerHTML = `${imgHtml}<div class="cart-item-info"><h4>${item.nombre}</h4><div class="cart-item-price">$${(item.precio*item.cantidad).toFixed(2)}</div><span class="cart-qty">× ${item.cantidad}</span></div><button class="btn-icon" onclick="removeFromCart(${item.id})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
+      container.appendChild(div);
+    });
+  }
+  document.getElementById('cart-total').textContent = `$${Carrito.total().toFixed(2)}`;
+}
+function removeFromCart(id) { Carrito.remove(id); renderCart(); }
+function goCheckout() {
+  if (!isLoggedIn()) { window.location.href = 'pages/login.html?redirect=checkout'; return; }
+  if (!Carrito.count()) { showToast('Tu carrito está vacío', 'error'); return; }
+  window.location.href = 'pages/checkout.html';
+}
+
+/* ── EVENTS ────────────────────────────────── */
+document.getElementById('cart-btn').addEventListener('click', e => { e.preventDefault(); openCart(); });
+document.getElementById('search').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  renderProductos(todosLosProductos.filter(p => p.nombre.toLowerCase().includes(q) || (p.descripcion||'').toLowerCase().includes(q)));
+});
+
+/* ── INIT ──────────────────────────────────── */
+renderNav();
+loadHeroImage();
+loadProductos();
+</script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaijudo — Acceso</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .login-wrap { width:100%; max-width:420px; padding:1rem; }
+    .brand-header { text-align:center; margin-bottom:2rem; }
+    .brand-header .dot { width:10px; height:10px; background:var(--accent); border-radius:50%; box-shadow:0 0 10px var(--accent); display:inline-block; margin-right:.4rem; }
+    .brand-name { font-family:var(--font-display); font-size:1.6rem; font-weight:800; letter-spacing:-.03em; }
+    .brand-sub  { color:var(--text-2); font-size:.875rem; margin-top:.3rem; }
+    .pass-wrap { position:relative; }
+    .pass-wrap input { padding-right:2.5rem; width:100%; }
+    .pass-toggle {
+      position:absolute; right:.65rem; top:50%; transform:translateY(-50%);
+      background:none; border:none; color:var(--text-3); cursor:pointer;
+      display:flex; align-items:center; padding:0; transition:color .15s;
+    }
+    .pass-toggle:hover { color:var(--text-2); }
+    .link-btn {
+      background:none; border:none; color:var(--red); cursor:pointer;
+      font-size:.8rem; font-family:var(--font-mono); text-decoration:underline;
+      padding:0; margin-top:.5rem; display:block; text-align:right; width:100%;
+    }
+    .link-btn:hover { opacity:.75; }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="brand-header">
+    <div>
+      <span class="dot"></span>
+      <span class="brand-name">Kaijudo</span>
+    </div>
+    <p class="brand-sub">Inicia sesión o crea una cuenta</p>
+  </div>
+
+  <div class="card card-p">
+    <div id="alert-area"></div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('login')">Iniciar sesión</button>
+      <button class="tab-btn" onclick="showTab('registro')">Registrarse</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="tab-login">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="pass-wrap">
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="pass-toggle" onclick="togglePass('login-password', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <button class="link-btn" onclick="showTab('recuperar')">¿Olvidaste tu contraseña?</button>
+      </div>
+      <button class="btn btn-primary w-100 btn-lg" id="login-btn" onclick="doLogin()">Entrar</button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="tab-registro" class="hidden">
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-nombre" placeholder="Tu nombre" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="pass-wrap">
+          <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+          <button type="button" class="pass-toggle" onclick="togglePass('reg-password', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Pregunta de seguridad</label>
+        <select id="reg-pregunta">
+          <option value="">— Selecciona una pregunta —</option>
+          <option value="¿Cuál es el nombre de tu mascota?">¿Cuál es el nombre de tu mascota?</option>
+          <option value="¿Cuál es el nombre de tu perro?">¿Cuál es el nombre de tu perro?</option>
+          <option value="¿En qué ciudad naciste?">¿En qué ciudad naciste?</option>
+          <option value="¿Cuál es el nombre de tu escuela primaria?">¿Cuál es el nombre de tu escuela primaria?</option>
+          <option value="¿Cuál es tu película favorita?">¿Cuál es tu película favorita?</option>
+          <option value="¿Cuál es el apodo de tu mejor amigo?">¿Cuál es el apodo de tu mejor amigo?</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Respuesta de seguridad</label>
+        <input type="text" id="reg-respuesta" placeholder="Tu respuesta secreta">
+        <p class="input-hint">Recuérdala bien, la necesitarás si olvidas tu contraseña</p>
+      </div>
+      <button class="btn btn-primary w-100 btn-lg" id="reg-btn" onclick="doRegistro()">Crear cuenta</button>
+    </div>
+
+    <!-- RECUPERAR — PASO 1: ingresar email -->
+    <div id="tab-recuperar" class="hidden">
+      <div style="margin-bottom:1rem">
+        <p style="font-size:.875rem;color:var(--ink-2);margin-bottom:.5rem">Ingresa tu email para recuperar tu contraseña.</p>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="rec-email" placeholder="tu@email.com">
+      </div>
+      <button class="btn btn-primary w-100 btn-lg" id="rec-btn-1" onclick="buscarPregunta()">Continuar</button>
+      <button class="link-btn" onclick="showTab('login')" style="text-align:center;margin-top:.75rem">← Volver al login</button>
+    </div>
+
+    <!-- RECUPERAR — PASO 2: responder pregunta y nueva contraseña -->
+    <div id="tab-recuperar-2" class="hidden">
+      <div style="margin-bottom:1rem">
+        <p style="font-size:.78rem;font-family:var(--font-mono);color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">Pregunta de seguridad</p>
+        <p id="rec-pregunta-texto" style="font-size:.9rem;color:var(--ink);font-weight:600"></p>
+      </div>
+      <div class="form-group">
+        <label>Tu respuesta</label>
+        <input type="text" id="rec-respuesta" placeholder="Escribe tu respuesta">
+      </div>
+      <div class="form-group">
+        <label>Nueva contraseña</label>
+        <div class="pass-wrap">
+          <input type="password" id="rec-nueva-pass" placeholder="Mínimo 6 caracteres">
+          <button type="button" class="pass-toggle" onclick="togglePass('rec-nueva-pass', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary w-100 btn-lg" id="rec-btn-2" onclick="doRecuperar()">Cambiar contraseña</button>
+      <button class="link-btn" onclick="showTab('recuperar')" style="text-align:center;margin-top:.75rem">← Volver</button>
+    </div>
+
+    <p class="text-center mt-3" style="font-size:.8rem">
+      <a href="../index.html" class="flex-center gap-1" style="color:var(--text-2)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Volver al catálogo
+      </a>
+    </p>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+if (isLoggedIn()) window.location.href = '../index.html';
+
+const EYE_OPEN = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_OFF  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+const TABS = ['login', 'registro', 'recuperar', 'recuperar-2'];
+
+function togglePass(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const show  = input.type === 'password';
+  input.type  = show ? 'text' : 'password';
+  btn.innerHTML = show ? EYE_OFF : EYE_OPEN;
+}
+
+function showTab(tab) {
+  TABS.forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab));
+  document.querySelectorAll('.tab-btn').forEach((b, i) =>
+    b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'registro'))
+  );
+  document.getElementById('alert-area').innerHTML = '';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  if (!email || !pass) return showAlert('Completa todos los campos', 'danger', document.getElementById('alert-area'));
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const user = await login(email, pass);
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect');
+    if (redirect === 'checkout') window.location.href = 'checkout.html';
+    else if (user.rol === 'admin' || user.rol === 'operador') window.location.href = 'admin.html';
+    else window.location.href = '../index.html';
+  } catch (e) {
+    showAlert(e.message, 'danger', document.getElementById('alert-area'));
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+}
+
+async function doRegistro() {
+  const nombre   = document.getElementById('reg-nombre').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const pass     = document.getElementById('reg-password').value;
+  const pregunta = document.getElementById('reg-pregunta').value;
+  const respuesta = document.getElementById('reg-respuesta').value.trim();
+  if (!nombre || !email || !pass) return showAlert('Completa todos los campos', 'danger', document.getElementById('alert-area'));
+  if (pass.length < 6) return showAlert('La contraseña debe tener al menos 6 caracteres', 'danger', document.getElementById('alert-area'));
+  if (!pregunta) return showAlert('Selecciona una pregunta de seguridad', 'danger', document.getElementById('alert-area'));
+  if (!respuesta) return showAlert('Escribe tu respuesta de seguridad', 'danger', document.getElementById('alert-area'));
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    // Crear cuenta
+    await registro(nombre, email, pass);
+    // Login automático para obtener token
+    await login(email, pass);
+    // Configurar pregunta de seguridad
+    await request('POST', '/auth/seguridad', { pregunta, respuesta });
+    // Limpiar sesión — el usuario debe hacer login conscientemente
+    localStorage.clear();
+    showAlert('Cuenta creada. Ahora inicia sesión.', 'success', document.getElementById('alert-area'));
+    showTab('login');
+    document.getElementById('login-email').value = email;
+  } catch (e) {
+    showAlert(e.message, 'danger', document.getElementById('alert-area'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Crear cuenta';
+  }
+}
+
+/* ── RECUPERAR CONTRASEÑA ── */
+let emailRecuperando = '';
+
+async function buscarPregunta() {
+  const email = document.getElementById('rec-email').value.trim();
+  if (!email) return showAlert('Ingresa tu email', 'danger', document.getElementById('alert-area'));
+  const btn = document.getElementById('rec-btn-1');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const data = await fetch(API + '/auth/pregunta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    }).then(r => { if (!r.ok) return r.json().then(e => { throw new Error(e.detail) }); return r.json(); });
+    emailRecuperando = email;
+    document.getElementById('rec-pregunta-texto').textContent = data.pregunta;
+    showTab('recuperar-2');
+  } catch (e) {
+    showAlert(e.message || 'No se encontró ese email', 'danger', document.getElementById('alert-area'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Continuar';
+  }
+}
+
+async function doRecuperar() {
+  const respuesta     = document.getElementById('rec-respuesta').value.trim();
+  const nuevaPassword = document.getElementById('rec-nueva-pass').value;
+  if (!respuesta) return showAlert('Escribe tu respuesta', 'danger', document.getElementById('alert-area'));
+  if (!nuevaPassword || nuevaPassword.length < 6) return showAlert('La contraseña debe tener al menos 6 caracteres', 'danger', document.getElementById('alert-area'));
+  const btn = document.getElementById('rec-btn-2');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    await fetch(API + '/auth/recuperar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailRecuperando, respuesta, nueva_password: nuevaPassword })
+    }).then(r => { if (!r.ok) return r.json().then(e => { throw new Error(e.detail) }); return r.json(); });
+    showAlert('¡Contraseña actualizada! Ya puedes iniciar sesión.', 'success', document.getElementById('alert-area'));
+    showTab('login');
+    document.getElementById('login-email').value = emailRecuperando;
+    emailRecuperando = '';
+  } catch (e) {
+    showAlert(e.message || 'Respuesta incorrecta', 'danger', document.getElementById('alert-area'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Cambiar contraseña';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (!document.getElementById('tab-login').classList.contains('hidden')) doLogin();
+  else if (!document.getElementById('tab-registro').classList.contains('hidden')) doRegistro();
+  else if (!document.getElementById('tab-recuperar').classList.contains('hidden')) buscarPregunta();
+  else if (!document.getElementById('tab-recuperar-2').classList.contains('hidden')) doRecuperar();
+});
+</script>
+</body>
+</html>

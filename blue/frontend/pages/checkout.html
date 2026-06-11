@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaijudo — Checkout</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-brand">
+    <span class="nav-brand-dot"></span>
+    Kaijudo
+  </a>
+  <div class="nav-links">
+    <a href="../index.html" class="flex align-center gap-1" style="color:var(--text-2)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Seguir comprando
+    </a>
+  </div>
+</nav>
+
+<div class="container" style="max-width:960px;">
+  <p class="section-label mb-1">Paso final</p>
+  <h2 class="page-title mb-3">Checkout</h2>
+  <div id="alert-area"></div>
+
+  <div class="grid-2" style="align-items:start;">
+    <!-- RESUMEN DEL PEDIDO -->
+    <div>
+      <div class="card card-p">
+        <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+          Tu pedido
+        </h3>
+        <div id="resumen-items"></div>
+        <hr class="divider">
+        <div class="flex-between">
+          <span class="text-muted" style="font-size:.875rem">Total</span>
+          <span id="resumen-total" style="font-family:var(--font-mono);font-size:1.35rem;font-weight:600;color:var(--accent-2)"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div>
+      <div class="card card-p">
+        <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          Datos de envío
+        </h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre completo</label>
+            <input type="text" id="nombre" placeholder="Juan Pérez" autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" id="telefono" placeholder="3312345678" autocomplete="tel">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="juan@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>Dirección completa</label>
+          <textarea id="direccion" placeholder="Calle, número, colonia, ciudad, estado" rows="3" autocomplete="street-address"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Método de pago</label>
+          <select id="metodo-pago">
+            <option value="tarjeta_credito">Tarjeta de crédito</option>
+            <option value="tarjeta_debito">Tarjeta de débito</option>
+            <option value="transferencia">Transferencia bancaria</option>
+            <option value="paypal">PayPal</option>
+            <option value="efectivo">Efectivo en entrega</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary w-100 btn-lg" id="checkout-btn" onclick="doCheckout()" style="margin-top:.5rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirmar orden
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+if (!isLoggedIn()) window.location.href = 'login.html?redirect=checkout';
+const items = Carrito.get();
+if (!items.length) window.location.href = '../index.html';
+
+function renderResumen() {
+  const container = document.getElementById('resumen-items');
+  container.innerHTML = items.map(i => `
+    <div class="checkout-summary-item">
+      <span>
+        <span style="font-size:.875rem">${i.nombre}</span>
+        <span class="text-muted" style="font-size:.78rem;font-family:var(--font-mono);margin-left:.4rem">x${i.cantidad}</span>
+      </span>
+      <span style="font-family:var(--font-mono);font-size:.875rem;color:var(--accent-2)">$${(i.precio * i.cantidad).toFixed(2)}</span>
+    </div>`).join('');
+  document.getElementById('resumen-total').textContent = `$${Carrito.total().toFixed(2)}`;
+}
+
+async function doCheckout() {
+  const nombre   = document.getElementById('nombre').value.trim();
+  const email    = document.getElementById('email').value.trim();
+  const telefono = document.getElementById('telefono').value.trim();
+  const direccion = document.getElementById('direccion').value.trim();
+  const metodo   = document.getElementById('metodo-pago').value;
+  const alertArea = document.getElementById('alert-area');
+
+  if (!nombre || !email || !telefono || !direccion) {
+    return showAlert('Completa todos los campos antes de continuar', 'danger', alertArea);
+  }
+  const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRx.test(email)) return showAlert('Email no válido', 'danger', alertArea);
+
+  const btn = document.getElementById('checkout-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Procesando...';
+
+  try {
+    const perfil = await Perfiles.create({ nombre, email, telefono, direccion });
+    const orden  = await Ordenes.create({
+      perfil_id: perfil.id,
+      items: items.map(i => ({ producto_id: i.id, cantidad: i.cantidad })),
+      metodo_pago: metodo,
+    });
+    Carrito.clear();
+    window.location.href = `confirmacion.html?orden_id=${orden.id}`;
+  } catch (e) {
+    showAlert(e.message, 'danger', alertArea);
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Confirmar orden`;
+  }
+}
+
+renderResumen();
+</script>
+</body>
+</html>
